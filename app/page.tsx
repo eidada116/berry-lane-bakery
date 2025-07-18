@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import "./globals.css";
 
 export default function HomePage() {
-  const [view, setView] = useState<"inventory" | "menu" | "transactions" | null>(null);
+  const [view, setView] = useState<"inventory" | "menu" | "transaction" | null>(null);
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!view || !["inventory", "menu", "transactions"].includes(view)) return;
+    if (!view || !["inventory", "menu", "transaction"].includes(view)) return;
 
     const fetchData = async () => {
       setLoading(true);
@@ -38,7 +38,7 @@ export default function HomePage() {
 
   const renderContent = () => {
     if (loading) return <p>Loading...</p>;
-    if (!view) return <p>Welcome! Click a button to view a section.</p>;
+    if (!view) return <p>Hello world.</p>;
 
     return (
       <div>
@@ -70,7 +70,7 @@ export default function HomePage() {
             <div>
               <input name="name" placeholder="Item name" className="border p-2 mr-2 rounded" required />
               <input name="quantity" type="number" placeholder="Quantity" className="border p-2 mr-2 rounded" required />
-              <input name="unit" placeholder="Unit (e.g. pcs, kg)" className="border p-2 mr-2 rounded" required />
+              <input name="unit" placeholder="Unit" className="border p-2 mr-2 rounded" required />
               <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">Add</button>
             </div>
           </form>
@@ -108,74 +108,75 @@ export default function HomePage() {
           </form>
         )}
 
+        {view === "transaction" && (
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const form = e.currentTarget;
+              const type = (form.elements.namedItem("type") as HTMLSelectElement).value;
+              const itemName = (form.elements.namedItem("itemName") as HTMLInputElement).value;
+              const quantity = (form.elements.namedItem("quantity") as HTMLInputElement).value;
+              const totalAmount = (form.elements.namedItem("totalAmount") as HTMLInputElement).value;
+
+              try {
+                await fetch("/api/transaction", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    type,
+                    itemName,
+                    quantity: Number(quantity),
+                    totalAmount: parseFloat(totalAmount),
+                  }),
+                });
+                form.reset();
+                await reloadData();
+              } catch (err) {
+                console.error("Failed to add transaction:", err);
+              }
+            }}
+            className="mb-4 space-y-2"
+          >
+            <div>
+              <select name="type" className="border p-2 mr-2 rounded" required>
+                <option value="">Select Type</option>
+                <option value="sale">Sale</option>
+                <option value="purchase">Purchase</option>
+              </select>
+              <input name="itemName" placeholder="Item name" className="border p-2 mr-2 rounded" required />
+              <input name="quantity" type="number" placeholder="Quantity" className="border p-2 mr-2 rounded" required />
+              <input name="totalAmount" type="number" step="0.01" placeholder="Total ₱" className="border p-2 mr-2 rounded" required />
+              <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">Add Transaction</button>
+            </div>
+          </form>
+        )}
+
         {data.length === 0 ? (
           <p>No data found for {view}</p>
         ) : (
           <ul className="list-disc ml-4">
             {data.map((item, index) => (
               <li key={index} className="mb-4 border p-4 rounded shadow-sm">
-                <div className="mb-2">
-                  <strong>Name:</strong> {item.name}
-                  <br />
-                  {view === "inventory" && (
-                    <>
-                      <strong>Quantity:</strong> {item.quantity} {item.unit}
-                      <br />
-                    </>
-                  )}
-                  {view === "menu" && (
-                    <>
-                      <strong>Price:</strong> ₱{item.price}
-                      <br />
-                      <strong>Quantity:</strong> {item.quantity}
-                      <br />
-                    </>
-                  )}
-                </div>
-
-                {(view === "inventory" || view === "menu") && (
-                  <div className="space-x-2">
-                    <button
-                      onClick={async () => {
-                        await fetch(`/api/${view}`, {
-                          method: "PATCH",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ id: item.id, quantity: item.quantity + 1 }),
-                        });
-                        await reloadData();
-                      }}
-                      className="bg-blue-500 text-white px-2 py-1 rounded"
-                    >
-                      Increase
-                    </button>
-
-                    <button
-                      onClick={async () => {
-                        await fetch(`/api/${view}`, {
-                          method: "PATCH",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ id: item.id, quantity: item.quantity - 1 }),
-                        });
-                        await reloadData();
-                      }}
-                      className="bg-yellow-500 text-white px-2 py-1 rounded"
-                    >
-                      Decrease
-                    </button>
-
-                    <button
-                      onClick={async () => {
-                        await fetch(`/api/${view}`, {
-                          method: "DELETE",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ id: item.id }),
-                        });
-                        await reloadData();
-                      }}
-                      className="bg-red-600 text-white px-2 py-1 rounded"
-                    >
-                      Delete
-                    </button>
+                {view === "inventory" && (
+                  <div>
+                    <strong>Name:</strong> {item.name}<br />
+                    <strong>Quantity:</strong> {item.quantity} {item.unit}
+                  </div>
+                )}
+                {view === "menu" && (
+                  <div>
+                    <strong>Name:</strong> {item.name}<br />
+                    <strong>Price:</strong> ₱{item.price}<br />
+                    <strong>Quantity:</strong> {item.quantity}
+                  </div>
+                )}
+                {view === "transaction" && (
+                  <div>
+                    <strong>Type:</strong> {item.type}<br />
+                    <strong>Item Name:</strong> {item.itemName}<br />
+                    <strong>Quantity:</strong> {item.quantity}<br />
+                    <strong>Total Amount:</strong> ₱{item.totalAmount}<br />
+                    <strong>Date:</strong> {new Date(item.createdAt).toLocaleString()}
                   </div>
                 )}
               </li>
@@ -196,10 +197,9 @@ export default function HomePage() {
           <div className="side-buttons">
             <button onClick={() => setView("inventory")} className="button p-2">📦 Inventory</button>
             <button onClick={() => setView("menu")} className="button p-2">🧁 Menu</button>
-            <button onClick={() => setView("transactions")} className="button p-2">💰 Transactions</button>
+            <button onClick={() => setView("transaction")} className="button p-2">💰 Transactions</button>
           </div>
         </div>
-
         <div className="side-content flex-1 p-6 bg-white border-l border-gray-300 overflow-y-auto">
           {renderContent()}
         </div>
