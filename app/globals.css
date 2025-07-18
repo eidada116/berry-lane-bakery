@@ -1,0 +1,80 @@
+@font-face {
+    font-family: 'EriAn';
+    src: url('/fonts/erian.ttf');
+}
+
+@font-face {
+    font-family: 'basiic';
+    src: url('/fonts/basiic.ttf');
+}
+
+html, body {
+    height: 100%; 
+    margin: 0;   
+    padding: 0;
+    display: flex;
+    justify-content: center; 
+    align-items: center;     
+    
+}
+html{
+    background-image: url('/wallpaper.png');
+    background-repeat: no-repeat;
+    background-size:cover;
+}
+
+.main-window{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    background-color: burlywood;
+    padding:10px;
+    height:350px;
+    background-image: url('/yellowstripe.jpg');
+    background-repeat: repeat;
+    border: #9f5e1c 5px double
+}
+
+.side-buttons{
+    display: flex;
+    flex-direction: column;
+    background-image: url('/cutepattern.jpg');
+    background-size:contain;
+    height:200px;
+    width:150px;
+}
+
+.button{
+    margin:5px;
+    font-family: 'basiic';
+    background-color: #9e5d1b;
+    color:white;
+    border: white 2px dashed;
+    height:30px;
+}
+
+.side-content{
+    display: flex;
+    justify-items: center;
+    height: 200px;      
+    width: 400px;       
+    background-color: white;
+    overflow: scroll;
+}
+
+h1{
+    font-family: 'EriAn';
+    color:white;
+}
+
+.content{
+    display: flex;
+    flex-direction: row;
+    margin:20px;
+    border: #9f5e1c 5px double
+}
+
+.top-content{
+    background-color:#9f5e1c
+
+}
